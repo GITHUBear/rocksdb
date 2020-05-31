@@ -305,6 +305,11 @@ ColumnFamilyOptions SanitizeOptions(const ImmutableDBOptions& db_options,
     result.capacity_warn_rate = 90.0 / 100;
   }
 
+  if (result.compaction_change_path_rate <= 0.0 ||
+  	  result.compaction_change_path_rate > 1.0) {
+  	result.compaction_change_path_rate = 70.0 / 100;
+  }
+
   if (result.capacity_danger_rate < result.capacity_warn_rate) {
     ROCKS_LOG_WARN(db_options.info_log.get(),
                    "This condition must be satisfied: "

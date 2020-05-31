@@ -179,6 +179,8 @@ ColumnFamilyOptions BuildColumnFamilyOptions(
       mutable_cf_options.capacity_danger_rate;
   cf_opts.capacity_warn_rate = 
       mutable_cf_options.capacity_warn_rate;
+  cf_opts.compaction_change_path_rate = 
+  	  mutable_cf_options.compaction_change_path_rate;
   cf_opts.max_compaction_bytes = mutable_cf_options.max_compaction_bytes;
   cf_opts.target_file_size_base = mutable_cf_options.target_file_size_base;
   cf_opts.target_file_size_multiplier =
@@ -1878,6 +1880,10 @@ std::unordered_map<std::string, OptionTypeInfo>
          {offset_of(&ColumnFamilyOptions::capacity_warn_rate),
           OptionType::kDouble, OptionVerificationType::kNormal, true,
           offsetof(struct MutableCFOptions, capacity_warn_rate)}},
+        {"compaction_change_path_rate",
+         {offset_of(&ColumnFamilyOptions::compaction_change_path_rate),
+          OptionType::kDouble, OptionVerificationType::kNormal, true,
+          offsetof(struct MutableCFOptions, compaction_change_path_rate)}},
         {"max_grandparent_overlap_factor",
          {0, OptionType::kInt, OptionVerificationType::kDeprecated, true, 0}},
         {"max_mem_compaction_level",

@@ -147,6 +147,7 @@ struct MutableCFOptions {
         level0_stop_writes_trigger(options.level0_stop_writes_trigger),
         capacity_warn_rate(options.capacity_warn_rate),
         capacity_danger_rate(options.capacity_danger_rate),
+        compaction_change_path_rate(options.compaction_change_path_rate),
         max_compaction_bytes(options.max_compaction_bytes),
         target_file_size_base(options.target_file_size_base),
         target_file_size_multiplier(options.target_file_size_multiplier),
@@ -186,6 +187,7 @@ struct MutableCFOptions {
         level0_stop_writes_trigger(0),
         capacity_warn_rate(0.0),
         capacity_danger_rate(0.0),
+        compaction_change_path_rate(0.0),
         max_compaction_bytes(0),
         target_file_size_base(0),
         target_file_size_multiplier(0),
@@ -240,6 +242,7 @@ struct MutableCFOptions {
   int level0_stop_writes_trigger;
   double capacity_warn_rate;
   double capacity_danger_rate;
+  double compaction_change_path_rate;
   uint64_t max_compaction_bytes;
   uint64_t target_file_size_base;
   int target_file_size_multiplier;

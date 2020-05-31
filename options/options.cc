@@ -59,6 +59,7 @@ AdvancedColumnFamilyOptions::AdvancedColumnFamilyOptions(const Options& options)
       level0_stop_writes_trigger(options.level0_stop_writes_trigger),
       capacity_warn_rate(options.capacity_warn_rate),
       capacity_danger_rate(options.capacity_danger_rate),
+      compaction_change_path_rate(options.compaction_change_path_rate),
       target_file_size_base(options.target_file_size_base),
       target_file_size_multiplier(options.target_file_size_multiplier),
       level_compaction_dynamic_level_bytes(
@@ -209,6 +210,8 @@ void ColumnFamilyOptions::Dump(Logger* log) const {
                      capacity_danger_rate);
     ROCKS_LOG_HEADER(log, "                   Options.capacity_warn_rate: %lf",
                      capacity_warn_rate);
+	ROCKS_LOG_HEADER(log, "                   Options.compaction_change_path_rate: %lf",
+		             compaction_change_path_rate);
     ROCKS_LOG_HEADER(
         log, "                  Options.target_file_size_base: %" PRIu64,
         target_file_size_base);

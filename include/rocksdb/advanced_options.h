@@ -398,6 +398,14 @@ struct AdvancedColumnFamilyOptions {
   // Dynamically changeable through SetOptions() API
   double capacity_danger_rate = 95.0 / 100;
 
+  // When the (path size + input files size) / path capacity exceeds compaction_change_path_rate,
+  // write the output files to the last path.
+  //
+  // Default: 70%
+  //
+  // Dynamically changeable through SetOptions() API
+  double compaction_change_path_rate = 70.0 / 100;
+
   // Target file size for compaction.
   // target_file_size_base is per-file size for level-1.
   // Target file size for level L can be calculated by
