@@ -405,12 +405,28 @@ Compaction* LevelCompactionBuilder::PickCompaction() {
 
 uint32_t LevelCompactionBuilder::AdjustPathId(uint32_t path_id, uint64_t total_input_size) const {
   auto& path_info = vstorage_->GetLocalPathInfo();
+
+  fprintf(stdout, "AdjustPathId:\n    path_id: %d.\n", path_id);
+  if(path_info.empty()) {
+  	fprintf(stdout, "path_info empty.\n");
+  } else {
+    fprintf(stdout, "path_info.size-1: %d.\n", int(path_info.size())-1);
+  }
+  
   if (path_info.empty() || path_id >= path_info.size() - 1) {
     return path_id;
   }
   uint64_t path_size = path_info[path_id].first;
   uint64_t path_capacity = path_info[path_id].second;
-  if (static_cast<double>(path_size + total_input_size) / path_capacity > 0.7) {
+
+  fprintf(stdout, "path_id: %d, path_size: %ld, path_capacity: %ld, compaction_change_path_rate: %lf.\n",
+  	path_id, path_size, path_capacity, mutable_cf_options_.compaction_change_path_rate);
+  fprintf(stdout, "path_size: %ld, total_input_size: %ld, rate: %lf.\n", path_size, total_input_size,
+  	static_cast<double>(path_size + total_input_size) / path_capacity);
+  
+  if (static_cast<double>(path_size + total_input_size) / path_capacity > 
+      mutable_cf_options_.compaction_change_path_rate) {
+    fprintf(stdout, "return the last path.\n");
     return static_cast<uint32_t>(path_info.size()) - 1;
   }
   return path_id;
