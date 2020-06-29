@@ -186,7 +186,7 @@ void FlushJob::PickMemTable() {
 
   // path 0 for level 0 file.
   meta_.fd = FileDescriptor(versions_->NewFileNumber(), 
-      static_cast<uint32_t>(path_id_), 0);
+      static_cast<uint32_t>(0), 0);
 
   base_ = cfd_->current();
   base_->Ref();  // it is likely that we do not need this reference

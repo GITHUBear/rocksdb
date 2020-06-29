@@ -417,15 +417,6 @@ uint32_t LevelCompactionBuilder::AdjustPathId(uint32_t path_id, uint64_t total_i
 }
 
 Compaction* LevelCompactionBuilder::GetCompaction() {
-  uint32_t path_id = GetPathId(ioptions_, mutable_cf_options_, output_level_);
-  uint64_t total_input_size = 0;
-  for (auto& input_files : compaction_inputs_) {
-    for (auto file : input_files.files) {
-      if (file->fd.GetPathId() == path_id) {
-        total_input_size += file->fd.GetFileSize();
-      }
-    }
-  }
   auto c = new Compaction(
       vstorage_, ioptions_, mutable_cf_options_, std::move(compaction_inputs_),
       output_level_,
@@ -433,7 +424,7 @@ Compaction* LevelCompactionBuilder::GetCompaction() {
                           ioptions_.compaction_style, vstorage_->base_level(),
                           ioptions_.level_compaction_dynamic_level_bytes),
       mutable_cf_options_.max_compaction_bytes,
-      AdjustPathId(path_id, total_input_size),
+      GetPathId(ioptions_, mutable_cf_options_, output_level_),
       GetCompressionType(ioptions_, vstorage_, mutable_cf_options_,
                          output_level_, vstorage_->base_level()),
       GetCompressionOptions(ioptions_, vstorage_, output_level_),

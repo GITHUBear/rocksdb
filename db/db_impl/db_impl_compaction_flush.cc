@@ -140,21 +140,20 @@ Status DBImpl::FlushMemTableToOutputFile(
     std::vector<SequenceNumber>& snapshot_seqs,
     SequenceNumber earliest_write_conflict_snapshot,
     SnapshotChecker* snapshot_checker, LogBuffer* log_buffer,
-    Env::Priority thread_pri, bool need_change_path) {
+    Env::Priority thread_pri, bool /*need_change_path*/) {
   mutex_.AssertHeld();
   assert(cfd->imm()->NumNotFlushed() != 0);
   assert(cfd->imm()->IsFlushPending());
 
-  size_t path_id = need_change_path ? (cfd->ioptions()->cf_paths.size() - 1U) : 0U;
   FlushJob flush_job(
       dbname_, cfd, immutable_db_options_, mutable_cf_options,
       nullptr /* memtable_id */, env_options_for_compaction_, versions_.get(),
       &mutex_, &shutting_down_, snapshot_seqs, earliest_write_conflict_snapshot,
       snapshot_checker, job_context, log_buffer, directories_.GetDbDir(),
-      GetDataDir(cfd, path_id),
+      GetDataDir(cfd, 0U),
       GetCompressionFlush(*cfd->ioptions(), mutable_cf_options), stats_,
       &event_logger_, mutable_cf_options.report_bg_io_stats,
-      true /* sync_output_directory */, true /* write_manifest */, thread_pri, path_id);
+      true /* sync_output_directory */, true /* write_manifest */, thread_pri);
 
   FileMetaData file_meta;
 
@@ -234,8 +233,8 @@ Status DBImpl::FlushMemTableToOutputFile(
 
     cfd->PathSizeRecorderOnAddFile(
       MakeTableFileName(
-        cfd->ioptions()->cf_paths[path_id].path, file_meta.fd.GetNumber()), 
-        static_cast<uint32_t>(path_id), 0);
+        cfd->ioptions()->cf_paths[0].path, file_meta.fd.GetNumber()), 
+        static_cast<uint32_t>(0), 0);
   }
   TEST_SYNC_POINT("DBImpl::FlushMemTableToOutputFile:Finish");
   return s;
@@ -316,16 +315,10 @@ Status DBImpl::AtomicFlushMemTablesToOutputFiles(
   std::vector<MutableCFOptions> all_mutable_cf_options;
   int num_cfs = static_cast<int>(cfds.size());
   all_mutable_cf_options.reserve(num_cfs);
-  std::vector<size_t> cfd_flush_path_ids;
-  cfd_flush_path_ids.reserve(num_cfs);
   for (int i = 0; i < num_cfs; ++i) {
     auto cfd = cfds[i];
-    size_t path_id = (cfd->ioptions()->compaction_style == kCompactionStyleLevel &&
-                      cfd->ioptions()->cf_paths.size() > 1U && bg_flush_args[i].run_out_of_capacity_) ?
-                      (cfd->ioptions()->cf_paths.size() - 1U) : 0U;
-    cfd_flush_path_ids.emplace_back(path_id);
-    Directory* data_dir = GetDataDir(cfd, path_id);
-    const std::string& curr_path = cfd->ioptions()->cf_paths[path_id].path;
+    Directory* data_dir = GetDataDir(cfd, 0U);
+    const std::string& curr_path = cfd->ioptions()->cf_paths[0].path;
 
     // Add to distinct output directories if eligible. Use linear search. Since
     // the number of elements in the vector is not large, performance should be
@@ -353,7 +346,7 @@ Status DBImpl::AtomicFlushMemTablesToOutputFiles(
         data_dir, GetCompressionFlush(*cfd->ioptions(), mutable_cf_options),
         stats_, &event_logger_, mutable_cf_options.report_bg_io_stats,
         false /* sync_output_directory */, false /* write_manifest */,
-        thread_pri, path_id));
+        thread_pri));
     jobs.back()->PickMemTable();
   }
 
@@ -545,9 +538,9 @@ Status DBImpl::AtomicFlushMemTablesToOutputFiles(
       }
       cfds[i]->PathSizeRecorderOnAddFile(
         MakeTableFileName(
-            cfds[i]->ioptions()->cf_paths[cfd_flush_path_ids[i]].path, 
+            cfds[i]->ioptions()->cf_paths[0].path, 
             file_meta[i].fd.GetNumber()), 
-            static_cast<uint32_t>(cfd_flush_path_ids[i]), 0);
+            static_cast<uint32_t>(0), 0);
     }
   }
 
