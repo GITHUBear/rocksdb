@@ -9,6 +9,7 @@
 #include "default_tree_builder.h"
 #include "balanced_parentheses_vector.h"
 
+namespace rocksdb {
 namespace succinct {
     namespace trie {
         // false - CENTROID, true - LEX
@@ -208,6 +209,7 @@ namespace succinct {
             }
         };
     }
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_PATH_DECOMPOSED_TRIE_H

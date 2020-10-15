@@ -6,6 +6,8 @@
 #include "bit_vector.h"
 #include "rank_select_bit_vector.h"
 
+using namespace rocksdb;
+
 succinct::RsBitVector seq012BitVector(const std::string& s) {
     succinct::BitVectorBuilder builder;
     for (auto bin : s) {

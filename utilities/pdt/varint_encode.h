@@ -9,6 +9,7 @@
 #include <vector>
 #include "bit_util.h"
 
+namespace rocksdb {
 // A temporary `varint` library for this module.
 namespace succinct {
     // Use `inline` & `template` in header to avoid redefinition。
@@ -42,6 +43,7 @@ namespace succinct {
         } while (byte & 0x80);
         return pos - offset;
     }
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_VARINT_ENCODE_H

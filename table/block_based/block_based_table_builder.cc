@@ -404,6 +404,7 @@ struct BlockBasedTableBuilder::Rep {
         oldest_key_time(_oldest_key_time),
         target_file_size(_target_file_size),
         file_creation_time(_file_creation_time) {
+    // [pdt_sst] TODO: PartitionedIndexBuilder
     if (table_options.index_type ==
         BlockBasedTableOptions::kTwoLevelIndexSearch) {
       p_index_builder_ = PartitionedIndexBuilder::CreateIndexBuilder(
@@ -416,6 +417,7 @@ struct BlockBasedTableBuilder::Rep {
           &this->internal_prefix_transform, use_delta_encoding_for_index_values,
           table_options));
     }
+    // [pdt_sst] create filter block builder here.
     if (skip_filters) {
       filter_builder = nullptr;
     } else {

@@ -7,6 +7,7 @@
 
 #include <functional>
 
+namespace rocksdb {
 namespace succinct {
     typedef std::function<void()> deleter_t;
 
@@ -109,6 +110,7 @@ namespace succinct {
         uint64_t m_size;        // word size
         deleter_t m_deleter;
     };
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_MAPPABLE_VECTOR_H

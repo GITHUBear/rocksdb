@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+namespace rocksdb {
 namespace succinct {
     namespace util {
         static const uint64_t MAGIC_MASK_1 = 0x5555555555555555ULL;
@@ -204,6 +205,7 @@ namespace succinct {
                 select_in_byte[((x >> byte_block_pos) & (uint64_t(0xFF))) | (byte_rank << 8)];
         }
     }
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_BIT_UTIL_H

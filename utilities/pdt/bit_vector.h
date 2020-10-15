@@ -10,6 +10,7 @@
 #include "bit_util.h"
 #include "mappable_vector.h"
 
+namespace rocksdb {
 namespace succinct {
     class BitVectorBuilder {
     public:
@@ -533,6 +534,7 @@ namespace succinct {
         size_t m_size_;                     // bit size
         mappable_vector<uint64_t> m_bits_;
     };
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_BIT_VECTOR_H

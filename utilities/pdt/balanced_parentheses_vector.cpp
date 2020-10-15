@@ -3,7 +3,10 @@
 //
 
 #include "balanced_parentheses_vector.h"
+#include <cassert>
+#include <limits>
 
+namespace rocksdb {
 namespace succinct {
     // excess tables for excess infos in a byte.
     class excess_tables
@@ -711,4 +714,5 @@ namespace succinct {
         m_block_excess_min_.steal(block_excess_min);
         m_superblock_excess_min_.steal(superblock_excess_min);
     }
+}
 }

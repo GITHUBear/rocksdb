@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include "balanced_parentheses_vector.h"
 
+using namespace rocksdb;
+
 TEST(FIND_OPEN, FIND_OPEN_IN_WORD_1) {
     uint64_t res;
     uint64_t word = 0x0F53800000000000ULL;

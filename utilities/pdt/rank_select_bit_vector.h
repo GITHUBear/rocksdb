@@ -7,6 +7,7 @@
 
 #include "bit_vector.h"
 
+namespace rocksdb {
 namespace succinct {
 
     // In BitVector, bits are combined in the following format:
@@ -318,6 +319,7 @@ namespace succinct {
         uint64_vec m_select_hints_;                   // block index
         uint64_vec m_select0_hints_;
     };
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_RANK_SELECT_BIT_VECTOR_H

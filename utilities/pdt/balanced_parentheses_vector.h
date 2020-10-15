@@ -7,6 +7,7 @@
 
 #include "rank_select_bit_vector.h"
 
+namespace rocksdb {
 namespace succinct {
     //
     // In a sequence of n balanced parentheses (BP), each open parenthesis
@@ -176,5 +177,5 @@ namespace succinct {
     void excess_rmq_in_word(uint64_t word, BpVector::excess_t& exc, uint64_t word_start,
                        BpVector::excess_t& min_exc, uint64_t& min_exc_idx);
 }
-
+}
 #endif //PATH_DECOMPOSITION_TRIE_BALANCED_PARENTHESES_VECTOR_H

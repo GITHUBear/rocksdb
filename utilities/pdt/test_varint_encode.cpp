@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include "varint_encode.h"
 
+using namespace rocksdb;
+
 TEST(VARINT_TEST, TEST_1) {
     std::vector<size_t> benches{847174, 9584965, 0, 455678087, 54766, 124};
     std::vector<uint8_t> bytes;

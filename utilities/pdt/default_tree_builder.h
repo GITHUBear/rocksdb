@@ -9,6 +9,7 @@
 #include <memory>
 #include "bit_vector.h"
 
+namespace rocksdb {
 namespace succinct {
     template <bool Lexicographic = false>
     class DefaultTreeBuilder {
@@ -153,6 +154,7 @@ namespace succinct {
     private:
         representation_type m_root_node;
     };
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_DEFAULT_TREE_BUILDER_H

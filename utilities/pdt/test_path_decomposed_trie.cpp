@@ -7,6 +7,8 @@
 #include "compacted_trie_builder.h"
 #include "default_tree_builder.h"
 
+using namespace rocksdb;
+
 std::vector<uint8_t> string_to_bytes(std::string s) {
     return std::vector<uint8_t>(s.begin(), s.end());
 }

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 
+namespace rocksdb {
 namespace succinct {
     namespace trie {
         template <typename TreeBuilder>
@@ -145,6 +146,7 @@ namespace succinct {
 
         };
     }
+}
 }
 
 #endif //PATH_DECOMPOSITION_TRIE_COMPACTED_TRIE_BUILDER_H
