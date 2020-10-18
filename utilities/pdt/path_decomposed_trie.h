@@ -5,6 +5,7 @@
 #ifndef PATH_DECOMPOSITION_TRIE_PATH_DECOMPOSED_TRIE_H
 #define PATH_DECOMPOSITION_TRIE_PATH_DECOMPOSED_TRIE_H
 
+#include "util/coding.h"
 #include "compacted_trie_builder.h"
 #include "default_tree_builder.h"
 #include "balanced_parentheses_vector.h"
@@ -19,7 +20,8 @@ namespace succinct {
             mappable_vector<uint8_t> m_branches;     // `B` in paper
             BpVector m_bp;                       // `BP` in paper
             // TODO: Use elias-fano encoding later.
-            mappable_vector<size_t> word_positions;
+            mappable_vector<uint64_t> word_positions;
+            bool is_portable = false;
 
             DefaultPathDecomposedTrie(compacted_trie_builder
                                       <DefaultTreeBuilder<Lexicographic>> &trieBuilder) {
@@ -40,7 +42,7 @@ namespace succinct {
                 std::vector<uint64_t> tmp_vec;
                 tmp_vec.push_back(0);
                 for (size_t i = 0; i + 1 < m_labels.size(); i++) {
-                    if (m_labels[i] == DefaultTreeBuilder<Lexicographic>::DELIMITER_FLAG) {
+                    if (get_portable16(m_labels[i]) == DefaultTreeBuilder<Lexicographic>::DELIMITER_FLAG) {
                         tmp_vec.push_back(i + 1);
                     }
                 }
@@ -52,11 +54,13 @@ namespace succinct {
             DefaultPathDecomposedTrie(const uint16_t* label_ptr, uint64_t label_len,
                                       const uint8_t* branch_ptr, uint64_t branch_len,
                                       const uint64_t* raw_data, uint64_t word_size, size_t bit_size,
-                                      const uint64_t* pos_ptr, uint64_t pos_len)
+                                      const uint64_t* pos_ptr, uint64_t pos_len,
+                                      bool portable = false)
                                       : m_labels(label_ptr, label_len)
                                       , m_branches(branch_ptr, branch_len)
                                       , m_bp(raw_data, word_size, bit_size, false, true)
-                                      , word_positions(pos_ptr, pos_len) {}
+                                      , word_positions(pos_ptr, pos_len)
+                                      , is_portable(portable) {}
 
             const mappable_vector<uint16_t> &get_labels() const {
                 return m_labels;
@@ -71,7 +75,7 @@ namespace succinct {
                 return m_bp;
             }
 
-            const std::vector<size_t>& get_word_pos() const {
+            const mappable_vector<uint64_t> &get_word_pos() const {
                 return word_positions;
             }
 
@@ -121,24 +125,24 @@ namespace succinct {
                 size_t matching_idx = 0;
                 // matching in the trie.
                 while (true) {
-                    size_t cur_label_idx = static_cast<size_t>(word_positions[cur_node_idx]);
+                    size_t cur_label_idx = static_cast<size_t>(get_portable64(word_positions[cur_node_idx]));
                     size_t cur_node_bp_idx = m_bp.select0(cur_node_idx);
                     size_t all_branch_num, branch_end;
                     get_branch_idx_by_node_idx(cur_node_idx, branch_end, all_branch_num);
                     size_t cur_branch_idx = (branch_end + 1) - all_branch_num;
                     // matching in a node.
                     while (true) {
-                        if (m_labels[cur_label_idx] ==
+                        if (get_portable16(m_labels[cur_label_idx]) ==
                             DefaultTreeBuilder<Lexicographic>::DELIMITER_FLAG) {
                             return (matching_idx == len ? cur_node_idx : -1);
                         }
                         if (matching_idx >= len) {
                             return -1;
                         }
-                        if (m_labels[cur_label_idx] >> 8 == 1) {
-                            assert(m_labels[cur_label_idx + 1] >> 8 == 0);
-                            auto branch0 = static_cast<uint8_t>(m_labels[cur_label_idx + 1]);
-                            size_t cur_branch_num = static_cast<uint8_t>(m_labels[cur_label_idx]) + 1;
+                        if (get_portable16(m_labels[cur_label_idx]) >> 8 == 1) {
+                            assert(get_portable16(m_labels[cur_label_idx + 1]) >> 8 == 0);
+                            auto branch0 = static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx + 1]));
+                            size_t cur_branch_num = static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx])) + 1;
 
                             if (branch0 == static_cast<uint8_t>(val[matching_idx])) {
                                 // update `cur_branch_idx`.
@@ -167,7 +171,7 @@ namespace succinct {
                                 return -1;
                             }
                         } else {
-                            if (m_labels[cur_label_idx] == static_cast<uint8_t>(val[matching_idx])) {
+                            if (get_portable16(m_labels[cur_label_idx]) == static_cast<uint8_t>(val[matching_idx])) {
                                 matching_idx++;
                             } else {
                                 return -1;
@@ -186,26 +190,26 @@ namespace succinct {
                 uint8_t branch;
                 size_t branch_no = 0;
                 do {
-                    if (word_positions[idx + 1] < 2) continue;
-                    size_t cur_label_idx = static_cast<size_t>(word_positions[idx + 1]) - 2;
+                    if (get_portable64(word_positions[idx + 1]) < 2) continue;
+                    size_t cur_label_idx = static_cast<size_t>(get_portable64(word_positions[idx + 1])) - 2;
                     size_t branch_cnt = 0;
                     while (true) {
-                        if (m_labels[cur_label_idx] ==
+                        if (get_portable16(m_labels[cur_label_idx]) ==
                             DefaultTreeBuilder<Lexicographic>::DELIMITER_FLAG) {
                             break;
                         }
-                        if (cur_label_idx && m_labels[cur_label_idx - 1] >> 8 == 1) {
-                            size_t cur_branch_num = static_cast<uint8_t>(m_labels[cur_label_idx - 1]) + 1;
+                        if (cur_label_idx && get_portable16(m_labels[cur_label_idx - 1]) >> 8 == 1) {
+                            size_t cur_branch_num = static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx - 1])) + 1;
                             if (branch_no) {
                                 if (branch_cnt + cur_branch_num >= branch_no) {
                                     if (branch_cnt < branch_no) {
                                         res.push_back(branch);
                                     } else {
-                                        res.push_back(static_cast<uint8_t>(m_labels[cur_label_idx]));
+                                        res.push_back(static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx])));
                                     }
                                 }
                             } else {
-                                res.push_back(static_cast<uint8_t>(m_labels[cur_label_idx]));
+                                res.push_back(static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx])));
                             }
                             branch_cnt += cur_branch_num;
                             if (cur_label_idx == 1) break;
@@ -213,7 +217,7 @@ namespace succinct {
                             continue;
                         } else {
                             if (!branch_no || branch_cnt >= branch_no) {
-                                res.push_back(static_cast<uint8_t>(m_labels[cur_label_idx]));
+                                res.push_back(static_cast<uint8_t>(get_portable16(m_labels[cur_label_idx])));
                             }
                         }
                         if (!cur_label_idx) break;
@@ -223,6 +227,22 @@ namespace succinct {
                 std::reverse(res.begin(), res.end());
                 return res;
             }
+
+            private:
+                inline uint16_t get_portable16(uint16_t n) const {
+                    if (!is_portable) return n;
+                    return DecodeFixed16(reinterpret_cast<const char*>(&n));
+                }
+
+                inline uint32_t get_portable32(uint32_t n) const {
+                    if (!is_portable) return n;
+                    return DecodeFixed32(reinterpret_cast<const char*>(&n));
+                }
+
+                inline uint64_t get_portable64(uint64_t n) const {
+                    if (!is_portable) return n;
+                    return DecodeFixed64(reinterpret_cast<const char*>(&n));
+                }
         };
     }
 }
