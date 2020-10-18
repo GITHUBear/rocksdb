@@ -21,7 +21,13 @@ namespace succinct {
         mappable_vector()
                 : m_data(0)
                 , m_size(0)
-                , m_deleter()
+                , m_deleter(nullptr)
+        {}
+
+        mappable_vector(const T* data, uint64_t word_size)
+                : m_data(data)
+                , m_size(word_size)
+                , m_deleter(nullptr)
         {}
 
         mappable_vector(const std::vector<T>& from)
@@ -95,6 +101,10 @@ namespace succinct {
 
         inline T const* data() const {
             return m_data;
+        }
+
+        inline T const& back() const {
+            return (*this)[m_size - 1];
         }
 
 //        inline void prefetch(size_t i) const {

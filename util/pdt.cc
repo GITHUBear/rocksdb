@@ -9,6 +9,7 @@
 
 #include "rocksdb/filter_policy.h"
 
+#include "util/coding.h"
 #include "utilities/pdt/default_tree_builder.h"
 #include "utilities/pdt/path_decomposed_trie.h"
 
@@ -25,9 +26,9 @@ public:
     const char* Name() const override { return "rocksdb.PdtFilter"; } 
 
     void CreateFilter(const Slice* keys, int n, std::string* dst) const override {
-        succinct::DefaultTreeBuilder<true> pdt_builder;
+        succinct::DefaultTreeBuilder<Lexicographic> pdt_builder;
         succinct::trie::compacted_trie_builder
-                <succinct::DefaultTreeBuilder<true>>
+                <succinct::DefaultTreeBuilder<Lexicographic>>
                 trieBuilder(pdt_builder);
         
         for (size_t i = 0; i < static_cast<size_t>(n); i++) {
@@ -35,7 +36,52 @@ public:
             trieBuilder.append(bytes);
         }
         trieBuilder.finish();
+        succinct::trie::DefaultPathDecomposedTrie<Lexicographic> pdt(trieBuilder);
+        
+        auto& labels = pdt.get_labels();
+        assert(labels.size() < std::numeric_limits<uint32_t>::max());
+        PutVarint32(dst, static_cast<uint32_t>(labels.size()));
 
+        size_t cur_size = dst->size();
+        size_t byte_size = labels.size() * sizeof(uint16_t);
+        dst->resize(cur_size + byte_size, 0);
+        char* array = &(*dst)[cur_size];
+        for (auto label : labels) {
+            EncodeFixed16(array, label);
+            array += 2;   
+        }
+
+        auto& branches = pdt.get_branches();
+        assert(branches.size() < std::numeric_limits<uint32_t>::max());
+        PutVarint32(dst, static_cast<uint32_t>(branches.size()));
+
+        cur_size = dst->size();
+        byte_size = branches.size() * sizeof(uint8_t);
+        dst->resize(cur_size + byte_size, 0);
+        array = &(*dst)[cur_size];
+        for (auto branch : branches) {
+            *array = branch;
+            array++;
+        }
+
+        auto& bp = pdt.get_bp().data();
+        PutVarint64(dst, bp.size());
+        for (size_t i = 0; i < static_cast<size_t>(bp.size()); i++) {
+            PutVarint64(dst, bp[i]);
+        }
+
+        auto& word_pos = pdt.get_word_pos();
+        PutVarint64(dst, static_cast<uint64_t>(word_pos.size()));
+        for (auto pos : word_pos) {
+            PutVarint64(dst, static_cast<uint64_t>(pos));
+        }
+    }
+
+    bool KeyMayMatch(const Slice& key, const Slice& bloom_filter) const override {
+        const size_t len = bloom_filter.size();
+        const char* array = bloom_filter.data();
+
+        
     }
 private:
     const bool use_block_based_builder_;

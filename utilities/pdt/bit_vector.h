@@ -6,6 +6,7 @@
 #define PATH_DECOMPOSITION_TRIE_BIT_VECTOR_H
 
 #include <vector>
+#include <algorithm>
 
 #include "bit_util.h"
 #include "mappable_vector.h"
@@ -134,7 +135,7 @@ namespace succinct {
 
             if (shift == 0) { // word-aligned, easy case
                 std::copy(rhs.m_bits_.begin(), rhs.m_bits_.end(),
-                          m_bits_.begin() + ptrdiff_t(pos));
+                          m_bits_.begin() + std::ptrdiff_t(pos));
             } else {
                 uint64_t *cur_word = &m_bits_.front() + pos - 1;
                 for (size_t i = 0; i < rhs.m_bits_.size() - 1; ++i) {
@@ -230,6 +231,11 @@ namespace succinct {
             m_size_ = builder->size();
             m_bits_.steal(builder->move_bits());
         }
+
+        BitVector(const uint64_t* raw_data, uint64_t word_size, size_t bit_size)
+                : m_size_(bit_size)
+                , m_bits_(raw_data, word_size)
+        {}
 
         void swap(BitVector& other) {
             std::swap(other.m_size_, m_size_);

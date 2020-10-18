@@ -57,6 +57,15 @@ namespace succinct {
             build_indices(with_select_hints, with_select0_hints);
         }
 
+        RsBitVector(const uint64_t* raw_data,
+                    uint64_t word_size,
+                    size_t bit_size,
+                    bool with_select_hints = false,
+                    bool with_select0_hints = false)
+                    : BitVector(raw_data, word_size, bit_size) {
+            build_indices(with_select_hints, with_select0_hints);
+        }
+
         void swap(RsBitVector& other) {
             BitVector::swap(other);
             m_block_rank_pairs_.swap(other.m_block_rank_pairs_);

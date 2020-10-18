@@ -6,7 +6,7 @@
 #define PATH_DECOMPOSITION_TRIE_BIT_UTIL_H
 
 #include <cstdint>
-
+#include <cassert>
 namespace rocksdb {
 namespace succinct {
     namespace util {
@@ -200,7 +200,7 @@ namespace succinct {
             // `k`-th 1-bit is at `byte_block_pos / 8`-th byte.
             const uint64_t byte_block_pos = popcount(byte_flag) << 3;
             const uint64_t byte_rank =
-                    k - ((byte_sums << 8) >> byte_block_pos) & (uint64_t(0xFF));
+                    k - (((byte_sums << 8) >> byte_block_pos) & (uint64_t(0xFF)));
             return byte_block_pos +
                 select_in_byte[((x >> byte_block_pos) & (uint64_t(0xFF))) | (byte_rank << 8)];
         }

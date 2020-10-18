@@ -15,11 +15,11 @@ namespace succinct {
         // false - CENTROID, true - LEX
         template<bool Lexicographic = false>
         struct DefaultPathDecomposedTrie {
-            std::vector<uint16_t> m_labels;      // `L` in paper
-            std::vector<uint8_t> m_branches;     // `B` in paper
+            mappable_vector<uint16_t> m_labels;      // `L` in paper
+            mappable_vector<uint8_t> m_branches;     // `B` in paper
             BpVector m_bp;                       // `BP` in paper
             // TODO: Use elias-fano encoding later.
-            std::vector<size_t> word_positions;
+            mappable_vector<size_t> word_positions;
 
             DefaultPathDecomposedTrie(compacted_trie_builder
                                       <DefaultTreeBuilder<Lexicographic>> &trieBuilder) {
@@ -27,8 +27,8 @@ namespace succinct {
 
                 typename DefaultTreeBuilder<Lexicographic>::representation_type
                         root = trieBuilder.get_root();
-                root->m_labels.swap(m_labels);
-                root->m_branches.swap(m_branches);
+                m_labels.steal(root->m_labels);
+                m_branches.steal(root->m_branches);
                 // [double free error] m_bp = BpVector(&root->m_bp, false, true);(fxxk c++!!!!)
                 auto tmp = BpVector(&root->m_bp, false, true);
                 m_bp.swap(tmp);
@@ -37,26 +37,42 @@ namespace succinct {
 
                 // This method to calculate delimiter position in m_labels is naive.
                 // TODO: optimal needed
-                word_positions.push_back(0);
-                for (int i = 0; i < m_labels.size() - 1; i++) {
+                std::vector<uint64_t> tmp_vec;
+                tmp_vec.push_back(0);
+                for (size_t i = 0; i + 1 < m_labels.size(); i++) {
                     if (m_labels[i] == DefaultTreeBuilder<Lexicographic>::DELIMITER_FLAG) {
-                        word_positions.push_back(i + 1);
+                        tmp_vec.push_back(i + 1);
                     }
                 }
-                word_positions.push_back(m_labels.size() + 1);
+                tmp_vec.push_back(m_labels.size() + 1);
+                word_positions.steal(tmp_vec);
             }
 
-            const std::vector<uint16_t> &get_labels() const {
+            // The constructor is used for decoding.
+            DefaultPathDecomposedTrie(const uint16_t* label_ptr, uint64_t label_len,
+                                      const uint8_t* branch_ptr, uint64_t branch_len,
+                                      const uint64_t* raw_data, uint64_t word_size, size_t bit_size,
+                                      const uint64_t* pos_ptr, uint64_t pos_len)
+                                      : m_labels(label_ptr, label_len)
+                                      , m_branches(branch_ptr, branch_len)
+                                      , m_bp(raw_data, word_size, bit_size, false, true)
+                                      , word_positions(pos_ptr, pos_len) {}
+
+            const mappable_vector<uint16_t> &get_labels() const {
                 return m_labels;
             }
 
-            const std::vector<uint8_t> &get_branches() const {
+            const mappable_vector<uint8_t> &get_branches() const {
                 return m_branches;
             }
 
             // TODO: return a const reference OK?
             const BpVector& get_bp() const {
                 return m_bp;
+            }
+
+            const std::vector<size_t>& get_word_pos() const {
+                return word_positions;
             }
 
             size_t size() const {
@@ -105,7 +121,7 @@ namespace succinct {
                 size_t matching_idx = 0;
                 // matching in the trie.
                 while (true) {
-                    size_t cur_label_idx = word_positions[cur_node_idx];
+                    size_t cur_label_idx = static_cast<size_t>(word_positions[cur_node_idx]);
                     size_t cur_node_bp_idx = m_bp.select0(cur_node_idx);
                     size_t all_branch_num, branch_end;
                     get_branch_idx_by_node_idx(cur_node_idx, branch_end, all_branch_num);
@@ -171,7 +187,7 @@ namespace succinct {
                 size_t branch_no = 0;
                 do {
                     if (word_positions[idx + 1] < 2) continue;
-                    size_t cur_label_idx = word_positions[idx + 1] - 2;
+                    size_t cur_label_idx = static_cast<size_t>(word_positions[idx + 1]) - 2;
                     size_t branch_cnt = 0;
                     while (true) {
                         if (m_labels[cur_label_idx] ==

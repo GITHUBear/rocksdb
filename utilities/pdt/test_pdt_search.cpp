@@ -18,9 +18,10 @@ void append_to_trie(
     builder.append(s1);
 }
 
-std::string get_label(const std::vector<uint16_t>& labels) {
+std::string get_label(const succinct::mappable_vector<uint16_t>& labels) {
     std::string label;
-    for (auto byte : labels) {
+    for (size_t i = 0; i < static_cast<size_t>(labels.size()); i++) {
+        uint16_t byte = labels[i];
         if (byte >> 8 == 1) {
             label += std::to_string(uint8_t(byte));
         } else if (byte >> 8 == 2) {
@@ -46,10 +47,10 @@ std::string get_bp_str(const succinct::BpVector& bp) {
     return bp_str;
 }
 
-std::string get_branch_str(const std::vector<uint8_t>& branches) {
+std::string get_branch_str(const succinct::mappable_vector<uint8_t>& branches) {
     std::string branch_str;
-    for (auto byte : branches) {
-        branch_str += (char)byte;
+    for (size_t i = 0; i < static_cast<size_t>(branches.size()); i++) {
+        branch_str += static_cast<char>(branches[i]);
     }
     return branch_str;
 }
@@ -74,8 +75,8 @@ TEST(PDT_TEST, CREATE_1) {
     EXPECT_EQ(get_label(pdt.get_labels()), "t0hree#i1a0l#g0le#la1r#e#s##l0e##");
     EXPECT_EQ(get_branch_str(pdt.get_branches()), "rpenuuty");
     EXPECT_EQ(get_bp_str(pdt.get_bp()), "(()((()()(())))())");
-    for (auto& pos : pdt.word_positions) {
-        printf("%lu ", pos);
+    for (size_t i = 0; i < static_cast<size_t>(pdt.word_positions.size()); i++) {
+        printf("%lu ", pdt.word_positions[i]);
     }
     printf("\n");
 }

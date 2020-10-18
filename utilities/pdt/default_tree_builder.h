@@ -102,7 +102,7 @@ namespace succinct {
                         }
                     }
                 }
-                assert(largest_child != -1);
+                assert(largest_child != static_cast<size_t>(-1));
                 // Pick heavy subtrie from compacted trie.
                 children[largest_child].second.swap(ret);
                 size_t n_branches = children.size() - 1;

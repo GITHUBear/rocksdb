@@ -694,6 +694,7 @@ set(SOURCES
         utilities/object_registry.cc
         utilities/option_change_migration/option_change_migration.cc
         utilities/options/options_util.cc
+        utilities/pdt/balanced_parentheses_vector.cpp
         utilities/persistent_cache/block_cache_tier.cc
         utilities/persistent_cache/block_cache_tier_file.cc
         utilities/persistent_cache/block_cache_tier_metadata.cc
@@ -1019,6 +1020,12 @@ if(WITH_TESTS)
         utilities/object_registry_test.cc
         utilities/option_change_migration/option_change_migration_test.cc
         utilities/options/options_util_test.cc
+        utilities/pdt/test_bit_vector.cpp
+        utilities/pdt/test_bp_vector.cpp
+        utilities/pdt/test_bp_vector_encode_decode.cpp
+        utilities/pdt/test_path_decomposed_trie.cpp
+        utilities/pdt/test_pdt_search.cpp
+        utilities/pdt/test_varint_encode.cpp
         utilities/persistent_cache/hash_table_test.cc
         utilities/persistent_cache/persistent_cache_test.cc
         utilities/simulator_cache/cache_simulator_test.cc

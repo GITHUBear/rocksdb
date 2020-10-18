@@ -32,16 +32,16 @@ namespace succinct {
     //                                 4superblock
     //                                 excess
     //                                 min
-    //                          /                        \
-    //                         /                          \
-    //                        /                            \
-    //                       /                              \
+    //                          /                        
+    //                         /                          
+    //                        /                            
+    //                       /                              
     //
     //                2superblock                         2superblock
     //                excess                              excess
     //                min                                 min
-    //             /                \                 /                 \
-    //            /                  \               /                   \
+    //             /                \                 /                 
+    //            /                  \               /                   
     //         1superblock      1superblock       1superblock       1superblock
     //         excess           excess            excess            excess
     //         min              min               min               min
@@ -69,6 +69,15 @@ namespace succinct {
                  bool with_select_hints = false,
                  bool with_select0_hints = false)
                  : RsBitVector(builder, with_select_hints, with_select0_hints) {
+            build_min_tree();
+        }
+        
+        BpVector(const uint64_t* raw_data,
+                 uint64_t word_size,
+                 size_t bit_size,
+                 bool with_select_hints = false,
+                 bool with_select0_hints = false)
+                 : RsBitVector(raw_data, word_size, bit_size, with_select_hints, with_select0_hints) {
             build_min_tree();
         }
 
