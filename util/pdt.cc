@@ -6,9 +6,7 @@
 // Copyright (c) 2012 The LevelDB Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
-#pragma once
-
-#include "rocksdb/filter_policy.h"
+#include "include/rocksdb/filter_policy.h"
 #include "port/port.h"
 #include "util/coding.h"
 #include "utilities/pdt/default_tree_builder.h"
@@ -16,6 +14,7 @@
 
 namespace rocksdb {
 // An implementation of filter policy
+namespace {
 template<bool Lexicographic = false>
 class PdtFilterPolicy : public FilterPolicy {
 public:
@@ -94,7 +93,24 @@ public:
         int res = pdt.index(s);
         return res != -1;
     }
+
+    FilterBitsBuilder* GetFilterBitsBuilder() const {
+        return nullptr;
+    }
+
+    FilterBitsReader* GetFilterBitsReader(const Slice& /*contents*/) const {
+        return nullptr;
+    }
 private:
     const bool use_block_based_builder_;
 };
+}
+
+const FilterPolicy* NewLexPdtFilterPolicy(bool use_block_based_builer) {
+    return new PdtFilterPolicy<true>(use_block_based_builer);
+}
+
+const FilterPolicy* NewCentriodPdtFilterPolicy(bool use_block_based_builder) {
+    return new PdtFilterPolicy<false>(use_block_based_builder);
+}
 }
