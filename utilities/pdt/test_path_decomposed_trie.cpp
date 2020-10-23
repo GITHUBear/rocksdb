@@ -77,7 +77,7 @@ TEST(TRIE_BUILD, PAPER_EXAMPLE_LEX) {
     trieBuilder.finish();
 
     succinct::DefaultTreeBuilder<true>::representation_type root = trieBuilder.get_root();
-    assert(get_label<succinct::DefaultTreeBuilder<true>>(root) == "t0hree#i1a0l#g0le#lar##l0e##");
+    assert(get_label<succinct::DefaultTreeBuilder<true>>(root) == "t0hree$#i1a0l$#g0le$#lar$#$#l0e$#$#");
     assert(get_bp_str<succinct::DefaultTreeBuilder<true>>(root) == "(()((()()))())");
     assert(get_branch_str<succinct::DefaultTreeBuilder<true>>(root) == "rpenuy");
 }
@@ -97,7 +97,7 @@ TEST(TRIE_BUILD, PAPER_EXAMPLE_CENTROID) {
     trieBuilder.finish();
 
     succinct::DefaultTreeBuilder<>::representation_type root = trieBuilder.get_root();
-    assert(get_label<succinct::DefaultTreeBuilder<>>(root) == "t0ri1a0ng0le#lar###l0e##ree#");
+    assert(get_label<succinct::DefaultTreeBuilder<>>(root) == "t0ri1a0ng0le$#lar$#$#$#l0e$#$#ree$#");
     assert(get_bp_str<succinct::DefaultTreeBuilder<>>(root) == "(((((())))()))");
     assert(get_branch_str<succinct::DefaultTreeBuilder<>>(root) == "hpeluy");
 }

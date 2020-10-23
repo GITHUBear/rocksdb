@@ -45,7 +45,7 @@ public:
 
         PutVarint64(dst, static_cast<uint64_t>(pdt.get_bp().size())); // valid bits size of bp
         PutVarint64(dst, labels.size() * sizeof(uint16_t));           // label byte size
-        PutVarint64(dst, branches.size() * sizeof(uint8_t));          // branch byte size
+        PutVarint64(dst, branches.size() * sizeof(uint16_t));         // branch byte size
         PutVarint64(dst, bp.size() * sizeof(uint64_t));               // bp byte size
         PutVarint64(dst, word_pos.size() * sizeof(uint64_t));         // word_pos byte size
 
@@ -53,7 +53,7 @@ public:
             PutFixed16(dst, labels[i]);
         }
         for (size_t i = 0; i < static_cast<size_t>(branches.size()); i++) {
-            dst->push_back(branches[i]);
+            PutFixed16(dst, branches[i]);
         }
         // bp encoding is not portable now for the sake of performance.
         for (size_t i = 0; i < static_cast<size_t>(bp.size()); i++) {
@@ -77,16 +77,16 @@ public:
         assert(GetVarint64(&tmp, &pos_size));
         
         auto label_ptr = reinterpret_cast<const uint16_t*>(tmp.data());
-        auto branch_ptr = reinterpret_cast<const uint8_t*>(tmp.data() + label_size);
+        auto branch_ptr = reinterpret_cast<const uint16_t*>(tmp.data() + label_size);
         auto bp_ptr = reinterpret_cast<const uint64_t*>(
                             tmp.data() + label_size + branch_size);
         auto pos_ptr = reinterpret_cast<const uint64_t*>(
                             tmp.data() + label_size + branch_size + bp_byte_size);
         succinct::trie::DefaultPathDecomposedTrie<Lexicographic> pdt(
-            label_ptr, label_size,
-            branch_ptr, branch_size,
+            label_ptr, label_size / sizeof(uint16_t),
+            branch_ptr, branch_size / sizeof(uint16_t),
             bp_ptr, bp_byte_size / sizeof(uint64_t), bp_bit_size,
-            pos_ptr, pos_size, true
+            pos_ptr, pos_size / sizeof(uint64_t), true
         );
 
         std::string s = key.ToString();

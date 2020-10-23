@@ -20,14 +20,15 @@ namespace succinct {
         //
         static const size_t SPECIAL_CHAR_FLAG = 256;
         static const size_t DELIMITER_FLAG = 512;
+        static const size_t WORD_EOF = 1024;
 
         struct subtree {
             // infos for decomposition path of the subtree
             std::vector<uint16_t> m_decomposition_path_label;
-            std::vector<uint8_t> m_decomposition_branches;
+            std::vector<uint16_t> m_decomposition_branches;
             // infos for other path of subtree
             std::vector<uint16_t> m_labels;      // `L` in paper
-            std::vector<uint8_t> m_branches;     // `B` in paper
+            std::vector<uint16_t> m_branches;     // `B` in paper
             BitVectorBuilder m_bp;               // `BP` in paper
             // m_num_leaves is used to check if m_decomposition_branches & m_bp is right.
             // TODO: remove m_num_leaves if it is checked
@@ -71,17 +72,17 @@ namespace succinct {
                 // Deconstruct this m_bp
                 BitVectorBuilder().swap(m_bp);
                 tree.m_branches.insert(tree.m_branches.end(), m_branches.begin(), m_branches.end());
-                std::vector<uint8_t>().swap(m_branches);
+                std::vector<uint16_t>().swap(m_branches);
                 tree.m_labels.insert(tree.m_labels.end(), m_labels.begin(), m_labels.end());
                 std::vector<uint16_t>().swap(m_labels);
             }
         };
 
         typedef std::shared_ptr<subtree> representation_type;
-        typedef std::vector<std::pair<uint8_t, representation_type>> children_type;
+        typedef std::vector<std::pair<uint16_t, representation_type>> children_type;
 
         representation_type node(
-                children_type& children, const uint8_t* buf,
+                children_type& children, const uint16_t* buf,
                 size_t offset, size_t skip) {
             representation_type ret;
 
