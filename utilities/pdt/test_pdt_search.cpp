@@ -374,6 +374,20 @@ TEST(PDT_TEST, OPERATOR_INDEX_2) {
     EXPECT_EQ(ubyes2str(pdt[6]), "peel");
 }
 
+TEST(PDT_TEST, TEST_ONLY_ONE) {
+    succinct::DefaultTreeBuilder<true> pdt_builder;
+    succinct::trie::compacted_trie_builder
+            <succinct::DefaultTreeBuilder<true>>
+            trieBuilder(pdt_builder);
+    append_to_trie(trieBuilder, "pace");    // 0
+    trieBuilder.finish();
+
+    succinct::trie::DefaultPathDecomposedTrie<true> pdt(trieBuilder);
+
+    EXPECT_EQ(ubyes2str(pdt[0]), "pace");
+    EXPECT_EQ(pdt.index("pace"), 0);
+}
+
 GTEST_API_ int main(int argc, char ** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

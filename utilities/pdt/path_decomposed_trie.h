@@ -83,16 +83,18 @@ namespace succinct {
                 return m_labels.size() + m_branches.size() + m_bp.size();
             }
 
-            void get_branch_idx_by_node_idx(size_t node_idx, size_t& end, size_t& num) const {
+            bool get_branch_idx_by_node_idx(size_t node_idx, size_t& end, size_t& num) const {
                 size_t bp_idx = m_bp.select0(node_idx);
-                assert(m_bp.rank(bp_idx) >= 2);
+                if (m_bp.rank(bp_idx) < 2) {
+                    return false;
+                }
                 end = m_bp.rank(bp_idx) - 2;
                 if (!node_idx) {
                     num = end + 1;
-                    return;
+                    return true;
                 }
                 num = bp_idx - m_bp.predecessor0(bp_idx - 1) - 1;
-                return;
+                return false;
             }
 
             // `branch_idx` for `m_bp`
@@ -129,7 +131,7 @@ namespace succinct {
                 while (true) {
                     size_t cur_label_idx = static_cast<size_t>(get_portable64(word_positions[cur_node_idx]));
                     size_t cur_node_bp_idx = m_bp.select0(cur_node_idx);
-                    size_t all_branch_num, branch_end;
+                    size_t all_branch_num = 0, branch_end = 0;
                     get_branch_idx_by_node_idx(cur_node_idx, branch_end, all_branch_num);
                     size_t cur_branch_idx = (branch_end + 1) - all_branch_num;
                     // matching in a node.
