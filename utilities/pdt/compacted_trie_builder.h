@@ -48,20 +48,6 @@ namespace succinct {
                     assert(match_res.first != bytes.end() &&
                            match_res.second != last_string.end());
                     // Sorted
-                    if (!(*match_res.second == 1024 || 
-                          (*match_res.first != 1024 && *match_res.first > *match_res.second))) {
-                        fprintf(stderr, "last_string: ");
-                        for (size_t i = 0; i < last_string.size(); i++) {
-                            fprintf(stderr, "%u, ", last_string[i]);
-                        }
-                        fprintf(stderr, "\n");
-                        fprintf(stderr, "cur bytes: ");
-                        for (size_t i = 0; i < bytes.size(); i++) {
-                            fprintf(stderr, "%u, ", bytes[i]);
-                        }
-                        fprintf(stderr, "\n");
-                        fprintf(stderr, "first: %u, second: %u\n", *match_res.first, *match_res.second);
-                    }
                     assert(*match_res.second == 1024 || 
                           (*match_res.first != 1024 && *match_res.first > *match_res.second));
 

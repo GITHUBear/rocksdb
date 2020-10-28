@@ -31,8 +31,22 @@ public:
                 <succinct::DefaultTreeBuilder<Lexicographic>>
                 trieBuilder(pdt_builder);
         
+        std::vector<Slice> sorted_slices;
         for (size_t i = 0; i < static_cast<size_t>(n); i++) {
-            std::vector<uint8_t> bytes(keys[i].data(), keys[i].data() + keys[i].size());
+            sorted_slices.push_back(keys[i]);
+        }
+        std::sort(sorted_slices.begin(), sorted_slices.end(), [] (const Slice& s1, const Slice& s2) {
+            return s1.compare(s2) < 0;
+        });
+
+        // for (size_t i = 0; i + 1 < sorted_slices.size(); i++) {
+        //     int res = sorted_slices[i].compare(sorted_slices[i + 1]);
+        //     assert(res < 0);
+        // }
+
+        for (size_t i = 0; i < sorted_slices.size(); i++) {
+            std::vector<uint8_t> bytes(sorted_slices[i].data(), 
+                                       sorted_slices[i].data() + sorted_slices[i].size());
             trieBuilder.append(bytes);
         }
         trieBuilder.finish();

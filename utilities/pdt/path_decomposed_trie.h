@@ -122,7 +122,11 @@ namespace succinct {
             // In rocksdb, we will not use string any more, maybe InternalKey...
             // get the index of `val` in the string set, if not exists return -1.
             int index(const std::string &s) const {
-                std::vector<uint16_t> val(s.begin(), s.end());
+                std::vector<uint16_t> val;
+                val.resize(s.size());
+                std::transform(s.begin(), s.end(), val.begin(), [] (char c) {
+                    return static_cast<uint16_t>(static_cast<uint8_t>(c));
+                });
                 val.push_back(DefaultTreeBuilder<Lexicographic>::WORD_EOF);
                 size_t len = val.size();
                 size_t cur_node_idx = 0;
