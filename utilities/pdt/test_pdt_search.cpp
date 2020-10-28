@@ -388,6 +388,62 @@ TEST(PDT_TEST, TEST_ONLY_ONE) {
     EXPECT_EQ(pdt.index("pace"), 0);
 }
 
+std::string get_raw_label(const succinct::mappable_vector<uint16_t>& labels) {
+    std::string label;
+    for (size_t i = 0; i < static_cast<size_t>(labels.size()); i++) {
+        uint16_t byte = labels[i];
+        if (byte >> 8 == 1) {
+            label += std::to_string(uint8_t(byte));
+        } else if (byte >> 8 == 2) {
+            label += '#';
+        } else if (byte >> 8 == 4) {
+            label += '$';  
+        } else {
+            label += '[';
+            label += std::to_string(uint8_t(byte));
+            label += ']';
+        }
+    }
+    return label;
+}
+
+std::string get_raw_branch_str(const succinct::mappable_vector<uint16_t>& branches) {
+    std::string branch_str;
+    for (size_t i = 0; i < static_cast<size_t>(branches.size()); i++) {
+        if (branches[i] == 512) branch_str += '#';
+        else if (branches[i] == 1024) branch_str += '$';
+        else {
+            branch_str += '[';
+            branch_str += std::to_string(branches[i]);
+            branch_str += ']';
+        }
+    }
+    return branch_str;
+}
+
+TEST(PDT_TEST, TEST_BUG) {
+    succinct::DefaultTreeBuilder<true> pdt_builder;
+    succinct::trie::compacted_trie_builder
+            <succinct::DefaultTreeBuilder<true>>
+            trieBuilder(pdt_builder);
+    std::vector<uint8_t> bytes = {127, 0, 0, 0};
+    trieBuilder.append(bytes);
+    bytes[0] = 128;
+    trieBuilder.append(bytes);
+    // bytes[0] = 129;
+    // trieBuilder.append(bytes);
+    trieBuilder.finish();
+
+    succinct::trie::DefaultPathDecomposedTrie<true> pdt(trieBuilder);
+
+    printf("%s\n", get_bp_str(pdt.get_bp()).c_str());
+    printf("%s\n", get_raw_label(pdt.get_labels()).c_str());
+    printf("%s\n", get_raw_branch_str(pdt.get_branches()).c_str());
+    bytes[0] = 128;
+    std::string s(bytes.begin(), bytes.end());
+    EXPECT_EQ(pdt.index(s), 1);
+}
+
 GTEST_API_ int main(int argc, char ** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
